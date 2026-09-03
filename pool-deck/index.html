@@ -31,7 +31,7 @@
         zip: val('ZIP Code'),
         service: val('Service Interest'),
         details: val('Project Description'),
-        website: val('botcheck') ? 'x' : (f.querySelector('[name=botcheck]') && f.querySelector('[name=botcheck]').checked ? 'x' : ''),
+        website: (function(){ var b=f.querySelector('[name=botcheck]'); return b && b.checked ? 'x' : ''; })(),
         page: (val('Page') || document.title || location.pathname).slice(0,120),
         formStartedAt: startedAt
       })

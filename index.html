@@ -75,7 +75,7 @@ Garage floors, patios, pool decks, and shop floors — ground, repaired, and coa
     }).then(function(r){ return r.json().then(function(d){ return {ok:r.ok, d:d}; }); }).then(function(res){
       if(res.ok && res.d && res.d.ok){
         f.querySelectorAll('input:not([type=hidden]):not([type=checkbox]), textarea, select').forEach(function(el){ el.value=''; });
-        show('Thank you — your request is in. We’ll call to schedule your free measurement.', true);
+        window.location.href='/thank-you/';
       } else {
         show((res.d && res.d.error) || 'Something went wrong. Please call (530) 338-6085 and we’ll take care of you.', false);
       }

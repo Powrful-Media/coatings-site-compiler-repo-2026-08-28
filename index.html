@@ -57,7 +57,7 @@ Garage floors, patios, pool decks, and shop floors — ground, repaired, and coa
       note.style.display = 'block';
       btn.disabled = false; btn.textContent = original;
     }
-    fetch('/api/lead', {
+    fetch('/api/lead/', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({

@@ -114,26 +114,30 @@ export default async function handler(req, res) {
     return res.status(503).json({ error: SORRY });
   }
 
-  try {
-    const delivery = await fetch(webhookUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      redirect: 'follow',
-      body: JSON.stringify({
-        token: webhookSecret,
-        request_id: clean(req.headers?.['x-vercel-id'] || 'n/a', 180),
-        lead,
-      }),
-      signal: AbortSignal.timeout(20_000),
-    });
-    const result = await delivery.json().catch(() => null);
-    if (!delivery.ok || result?.ok !== true) {
-      fail(req, 'lead_webhook', { providerStatus: delivery.status, providerError: clean(result?.error || 'invalid_response', 80) });
-      return res.status(502).json({ error: SORRY });
+  // Two attempts: Apps Script occasionally fails transiently. A retry can, in
+  // the worst case, duplicate a row + email (if the first attempt succeeded
+  // but its response was lost). A duplicate lead beats a lost lead.
+  const payload = JSON.stringify({
+    token: webhookSecret,
+    request_id: clean(req.headers?.['x-vercel-id'] || 'n/a', 180),
+    lead,
+  });
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    try {
+      const delivery = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        redirect: 'follow',
+        body: payload,
+        signal: AbortSignal.timeout(20_000),
+      });
+      const result = await delivery.json().catch(() => null);
+      if (delivery.ok && result?.ok === true) return res.status(200).json({ ok: true });
+      fail(req, 'lead_webhook', { attempt, providerStatus: delivery.status, providerError: clean(result?.error || 'invalid_response', 80) });
+    } catch (error) {
+      fail(req, 'lead_webhook_request', { attempt, errorName: clean(error?.name || 'Error', 80) });
     }
-    return res.status(200).json({ ok: true });
-  } catch (error) {
-    fail(req, 'lead_webhook_request', { errorName: clean(error?.name || 'Error', 80) });
-    return res.status(502).json({ error: SORRY });
+    if (attempt === 1) await new Promise((resolve) => setTimeout(resolve, 750));
   }
+  return res.status(502).json({ error: SORRY });
 }

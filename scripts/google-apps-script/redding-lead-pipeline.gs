@@ -123,6 +123,43 @@ function installDailyReportTrigger() {
     .create();
 }
 
+// One-time readability pass on the lead sheet. Run manually from the Apps
+// Script editor (Run > formatLeadSheet). Safe to re-run; formats whole
+// columns so future appended rows inherit everything. No redeploy needed —
+// doPost is unchanged.
+function formatLeadSheet() {
+  const sheet = SpreadsheetApp.openById(CONFIG.spreadsheetId).getSheetByName(CONFIG.sheetName);
+  if (!sheet) throw new Error('Lead sheet not found.');
+  const maxRows = sheet.getMaxRows();
+  const cols = HEADER.length;
+
+  // Header: frozen, bold white on dark, slightly taller.
+  const header = sheet.getRange(1, 1, 1, cols);
+  header.setBackground('#1f3a5f').setFontColor('#ffffff').setFontWeight('bold').setFontSize(11);
+  sheet.setFrozenRows(1);
+  sheet.setRowHeight(1, 32);
+
+  // Column widths tuned to content.
+  const widths = [150, 110, 170, 160, 220, 130, 60, 180, 420];
+  widths.forEach((width, index) => sheet.setColumnWidth(index + 1, width));
+
+  // Whole-column formats so new rows pick them up automatically.
+  const body = sheet.getRange(2, 1, maxRows - 1, cols);
+  body.setVerticalAlignment('top').setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP);
+  sheet.getRange(2, 1, maxRows - 1, 1).setNumberFormat('mmm d, yyyy h:mm am/pm');
+  sheet.getRange(2, 9, maxRows - 1, 1).setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP); // Project Description
+  sheet.getRange(2, 7, maxRows - 1, 1).setNumberFormat('@'); // ZIP as text, keeps leading zeros
+
+  // Alternating row shading (banding auto-extends as rows append).
+  sheet.getBandings().forEach((banding) => banding.remove());
+  sheet.getRange(2, 1, maxRows - 1, cols)
+    .applyRowBanding(SpreadsheetApp.BandingTheme.LIGHT_GREY, false, false);
+
+  // Filter buttons on the header for sorting/searching.
+  if (sheet.getFilter()) sheet.getFilter().remove();
+  sheet.getRange(1, 1, maxRows, cols).createFilter();
+}
+
 function jsonResponse_(value) {
   return ContentService.createTextOutput(JSON.stringify(value)).setMimeType(ContentService.MimeType.JSON);
 }

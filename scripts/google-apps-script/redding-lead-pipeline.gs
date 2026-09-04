@@ -118,8 +118,9 @@ function installDailyReportTrigger() {
   ScriptApp.newTrigger('sendDailyLeadReport')
     .timeBased()
     .atHour(7)
+    .nearMinute(30)
     .everyDays(1)
-    .inTimezone(CONFIG.timeZone)
+    .inTimezone('America/Chicago') // 7:30am Central — deployed 2026-09-04; Powrful reads it, not Redding
     .create();
 }
 

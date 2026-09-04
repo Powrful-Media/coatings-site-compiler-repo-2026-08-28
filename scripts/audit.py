@@ -26,7 +26,6 @@ import os, re, sys, json, glob
 # ─────────────────────────────────────────────────────────────────────
 CONFIG = {
     "domain":        "https://polytekofredding.com",
-    "form_key":      "c67ee82a-b0ac-401b-8d28-607fad7af3bb",
     "review_count":  "146",          # verified against live GBP 2026-08-06
     "review_rating": "4.9",
     "city_pages":    ["anderson", "red-bluff", "shasta-lake"],
@@ -118,7 +117,9 @@ def audit(dist):
         for bad, label in ([(dom, 'legacy brand domain') for dom in CONFIG["legacy_domains"]] +
                            [('/api/leads', 'unwired form action'),
                             ('company_website', 'dead honeypot field'),
-                            ('vercel.app', 'preview host URL leaked')]):
+                            ('vercel.app', 'preview host URL leaked'),
+                            ('web3forms', 'retired form service (removed 2026-09-04)'),
+                            ('name="access_key"', 'retired form key')]):
             if bad in s:
                 fails.append((url, 'LEFTOVER', f'{label}: {bad}'))
 
@@ -137,8 +138,8 @@ def audit(dist):
         if 'id="lead-form"' in s:
             forms += 1
             for need, label in [
-                (f'value="{CONFIG["form_key"]}"', 'form access key'),
-                ('api.web3forms.com/submit',      'form endpoint'),
+                ("fetch('/api/lead/'",            'pipeline endpoint'),  # JSON post to the Vercel function
+                ('<noscript>',                    'no-JS phone fallback'),
                 ('name="Email"',                  'EMAIL FIELD'),   # shipped missing once
                 ('name="Phone"',                  'phone field'),
                 ('botcheck',                      'spam bot check'),

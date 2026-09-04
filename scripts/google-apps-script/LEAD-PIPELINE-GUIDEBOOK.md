@@ -85,6 +85,8 @@ inbox before the site is approved and live — the flip is the launch-day step.
 - The Sheet and digest are internal to Powrful. The dealer gets instant emails
   only; adding them to reportEmails leaks the Sheet link.
 - Web3Forms markup (where a site had it) can stay as the no-JS fallback until a
-  deliberate cleanup pass, along with the audit rules that check it.
+  deliberate cleanup pass, along with the audit rules that check it. Redding's
+  cleanup pass ran 2026-09-04: markup stripped, `<noscript>` phone fallback
+  added, audit flipped to require the pipeline and forbid residue.
 - DNS, domains, and merges are Jay's seat. Mail (MX) must survive any nameserver
   move — the dealer's inbox IS the lead destination.

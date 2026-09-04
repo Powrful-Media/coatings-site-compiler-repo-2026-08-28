@@ -52,6 +52,7 @@ version. Then send one more synthetic lead and have Josh confirm receipt.
 - MailApp quota is 1,500 recipients/day on Workspace (100/day on a free gmail
   account — the script owner must be the Workspace account). Each lead uses 2
   recipients; the digest uses 2/day. Nowhere near the limit.
-- Web3Forms can be fully removed (hidden inputs + form action) after the new
-  pipeline has run in production for a while; that also needs audit.py's form
-  checks updated. Not now.
+- DONE 2026-09-04: Web3Forms fully removed (hidden inputs + form action) from
+  all 7 form pages, replaced with a `<noscript>` phone fallback. audit.py's
+  form checks now require the /api/lead/ fetch and fail on any
+  web3forms/access_key residue.
